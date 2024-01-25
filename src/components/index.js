@@ -1,17 +1,27 @@
-import '../index.css';
+import '../index.css'
 import { initialCards } from './cards.js'
 import { addCard, deleteCard, toggleLike } from './card.js'
-import { openPopup, closePopup } from './modal.js'
+import { openPopup, closePopup, closePopupOverlay } from './modal.js'
 
-export const placeCards = document.querySelector('.places__list')
-const profileName = document.querySelector('.profile__title');
+const placeCards = document.querySelector('.places__list')
+const profileName = document.querySelector('.profile__title')
 const profileDescription = document.querySelector('.profile__description')
 const editPopup = document.querySelector('.popup_type_edit')
-const formElementEdit = document.querySelector('.popup__form[name=edit-profile]')
+const formElementEdit = document.querySelector(
+	'.popup__form[name=edit-profile]'
+)
 const nameInput = formElementEdit.querySelector('.popup__input_type_name')
 const jobInput = formElementEdit.querySelector('.popup__input_type_description')
 const formElementAdd = document.querySelector('.popup__form[name=new-place]')
 const newCardPopup = document.querySelector('.popup_type_new-card')
+const imagePopup = document.querySelector('.popup_type_image')
+const imageContent = imagePopup.querySelector('.popup__image')
+const imagePopupCaption = imagePopup.querySelector('.popup__caption')
+const placeNameInput = formElementAdd.querySelector(
+	'.popup__input_type_card-name'
+)
+const linkInput = formElementAdd.querySelector('.popup__input_type_url')
+const closeButtons = document.querySelectorAll('.popup__close')
 
 function addEditPopup() {
 	const editButton = document.querySelector('.profile__edit-button')
@@ -19,8 +29,8 @@ function addEditPopup() {
 		nameInput.value = profileName.textContent
 		jobInput.value = profileDescription.textContent
 		openPopup(editPopup)
-	})
-	formElementEdit.addEventListener('submit', handleFormSubmit)
+		})
+	formElementEdit.addEventListener('submit', handleFormElementEditSubmit)
 }
 
 function addNewCardPopup() {
@@ -29,48 +39,57 @@ function addNewCardPopup() {
 		formElementAdd.reset()
 		openPopup(newCardPopup)
 	})
-	formElementAdd.addEventListener('submit', handleFormSubmit)
+	formElementAdd.addEventListener('submit', handleFormElementAddSubmit)
 }
 
-function addCardPopup(cardLink, cardName) {
-	const imagePopup = document.querySelector('.popup_type_image')
-	const imageContent = imagePopup.querySelector('.popup__image')
-	const imagePopupCapt = imagePopup.querySelector('.popup__caption')
+function openPopupFullImage(cardLink, cardName) {
 	imageContent.src = cardLink
-	imagePopupCapt.textContent = cardName
+	imageContent.alt = cardName
+	imagePopupCaption.textContent = cardName
 	openPopup(imagePopup)
 }
 
-function handleFormSubmit(evt) {
+function handleFormElementAddSubmit(evt) {
 	evt.preventDefault()
-	if (evt.currentTarget === formElementEdit) {
-		profileName.textContent = nameInput.value
-		profileDescription.textContent = jobInput.value
-		closePopup(editPopup)
-	} else if (evt.currentTarget === formElementAdd) {
-		const placeNameInput = formElementAdd.querySelector(
-			'.popup__input_type_card-name'
-		)
-		const linkInput = formElementAdd.querySelector('.popup__input_type_url')
-		const newCard = {
-			name: `${placeNameInput.value}`,
-			link: `${linkInput.value}`,
-		}
-		placeCards.prepend(addCard(newCard, deleteCard, addCardPopup, toggleLike))
-		closePopup(newCardPopup)
+	const newCard = {
+		name: `${placeNameInput.value}`,
+		link: `${linkInput.value}`,
 	}
+	placeCards.prepend(
+		addCard(newCard, deleteCard, openPopupFullImage, toggleLike)
+	)
+	closePopup(newCardPopup)
+}
+
+function handleFormElementEditSubmit(evt) {
+	evt.preventDefault()
+	profileName.textContent = nameInput.value
+	profileDescription.textContent = jobInput.value
+	closePopup(editPopup)
+	closePopup(newCardPopup)
 }
 
 function displayCards() {
 	initialCards.forEach(element => {
-		placeCards.append(addCard(element, deleteCard, addCardPopup, toggleLike))
+		placeCards.append(
+			addCard(element, deleteCard, openPopupFullImage, toggleLike)
+		)
 	})
 }
 
-displayCards();
-addEditPopup();
-addNewCardPopup();
+editPopup.addEventListener('click', closePopupOverlay)
+newCardPopup.addEventListener('click', closePopupOverlay)
+imagePopup.addEventListener('click', closePopupOverlay)
 
+closeButtons.forEach(button => {
+	button.addEventListener('click', () => {
+		const openedPopup = document.querySelector('.popup_is-opened')
+		closePopup(openedPopup)
+	})
+})
 
+displayCards()
+addEditPopup()
+addNewCardPopup()
 
-
+export { placeCards }
