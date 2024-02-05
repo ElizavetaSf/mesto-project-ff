@@ -2,6 +2,7 @@ import '../index.css'
 import { initialCards } from './cards.js'
 import { addCard, deleteCard, toggleLike } from './card.js'
 import { openPopup, closePopup, closePopupOverlay } from './modal.js'
+import { enableValidation, clearValidation } from './validation.js'
 
 const placeCards = document.querySelector('.places__list')
 const profileName = document.querySelector('.profile__title')
@@ -22,12 +23,21 @@ const placeNameInput = formElementAdd.querySelector(
 )
 const linkInput = formElementAdd.querySelector('.popup__input_type_url')
 const closeButtons = document.querySelectorAll('.popup__close')
+const validationSelectors = {
+	formSelector: '.popup__form',
+	inputSelector: '.popup__input',
+	submitButtonSelector: '.popup__button',
+	inactiveButtonClass: 'popup__button_disabled',
+	inputErrorClass: 'popup__input_type_error',
+	errorClass: 'popup__error_visible',
+}
 
 function addEditPopup() {
 	const editButton = document.querySelector('.profile__edit-button')
 	editButton.addEventListener('click', () => {
 		nameInput.value = profileName.textContent
 		jobInput.value = profileDescription.textContent
+		clearValidation(formElementEdit, validationSelectors)
 		openPopup(editPopup)
 		})
 	formElementEdit.addEventListener('submit', handleFormElementEditSubmit)
@@ -37,6 +47,7 @@ function addNewCardPopup() {
 	const newCardButton = document.querySelector('.profile__add-button')
 	newCardButton.addEventListener('click', () => {
 		formElementAdd.reset()
+		clearValidation(formElementAdd, validationSelectors)
 		openPopup(newCardPopup)
 	})
 	formElementAdd.addEventListener('submit', handleFormElementAddSubmit)
@@ -87,6 +98,8 @@ closeButtons.forEach(button => {
 		closePopup(openedPopup)
 	})
 })
+
+enableValidation(validationSelectors)
 
 displayCards()
 addEditPopup()
