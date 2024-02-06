@@ -65,16 +65,16 @@ function toggleButtonState(inputList, buttonElement) {
 }
 
 function clearValidation(formElement, validationSelectors) {
-  const allFormErrors = Array.from(formElement.querySelectorAll('.popup__error'))
+  const FormErrorList = Array.from(formElement.querySelectorAll('.popup__error'))
   const inputList = Array.from(
 		formElement.querySelectorAll(validationSelectors.inputSelector)
 	)
   const submitButtonAddCard = formElement.querySelector('.popup__button')
-  allFormErrors.forEach(element => {
-		element.classList.remove(validationSelectors.errorClass)
+  FormErrorList.forEach(formErrorElement => {
+		formErrorElement.classList.remove(validationSelectors.errorClass)
 	})
-  inputList.forEach(element => {
-		element.classList.remove(validationSelectors.inputErrorClass)
+  inputList.forEach(inputElement => {
+		inputElement.classList.remove(validationSelectors.inputErrorClass)
 	})
   toggleButtonState(inputList, submitButtonAddCard)
 }

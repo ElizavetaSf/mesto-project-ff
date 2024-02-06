@@ -1,12 +1,14 @@
 import '../index.css'
-import { initialCards } from './cards.js'
+//import { initialCards } from './cards.js'
 import { addCard, deleteCard, toggleLike } from './card.js'
 import { openPopup, closePopup, closePopupOverlay } from './modal.js'
 import { enableValidation, clearValidation } from './validation.js'
+import { promiseAll, patchUserData } from './api.js'
 
 const placeCards = document.querySelector('.places__list')
 const profileName = document.querySelector('.profile__title')
 const profileDescription = document.querySelector('.profile__description')
+const profileImage = document.querySelector('.profile__image')
 const editPopup = document.querySelector('.popup_type_edit')
 const formElementEdit = document.querySelector(
 	'.popup__form[name=edit-profile]'
@@ -74,13 +76,14 @@ function handleFormElementAddSubmit(evt) {
 
 function handleFormElementEditSubmit(evt) {
 	evt.preventDefault()
+	patchUserData(nameInput, jobInput)
 	profileName.textContent = nameInput.value
 	profileDescription.textContent = jobInput.value
 	closePopup(editPopup)
 	closePopup(newCardPopup)
 }
 
-function displayCards() {
+function displayCards(initialCards) {
 	initialCards.forEach(element => {
 		placeCards.append(
 			addCard(element, deleteCard, openPopupFullImage, toggleLike)
@@ -101,8 +104,18 @@ closeButtons.forEach(button => {
 
 enableValidation(validationSelectors)
 
-displayCards()
 addEditPopup()
 addNewCardPopup()
 
-export { placeCards }
+promiseAll()
+	
+
+export {
+	placeCards,
+	profileName,
+	profileDescription,
+	profileImage,
+	displayCards,
+	nameInput,
+	jobInput,
+}
