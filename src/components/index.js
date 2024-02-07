@@ -3,7 +3,12 @@ import '../index.css'
 import { addCard, deleteCard, toggleLike } from './card.js'
 import { openPopup, closePopup, closePopupOverlay } from './modal.js'
 import { enableValidation, clearValidation } from './validation.js'
-import { promiseAll, patchUserData } from './api.js'
+import {
+	promiseAll,
+	patchUserData,
+	postNewCard,
+	getInitialCards,
+} from './api.js'
 
 const placeCards = document.querySelector('.places__list')
 const profileName = document.querySelector('.profile__title')
@@ -68,8 +73,13 @@ function handleFormElementAddSubmit(evt) {
 		name: `${placeNameInput.value}`,
 		link: `${linkInput.value}`,
 	}
-	placeCards.prepend(
-		addCard(newCard, deleteCard, openPopupFullImage, toggleLike)
+	postNewCard(newCard)
+	.then(
+		function(result) {
+		placeCards.prepend(
+			addCard(result, deleteCard, openPopupFullImage, toggleLike)
+		)
+		}
 	)
 	closePopup(newCardPopup)
 }
@@ -84,10 +94,8 @@ function handleFormElementEditSubmit(evt) {
 }
 
 function displayCards(initialCards) {
-	initialCards.forEach(element => {
-		placeCards.append(
-			addCard(element, deleteCard, openPopupFullImage, toggleLike)
-		)
+	initialCards.forEach(card => {
+		placeCards.append(addCard(card, deleteCard, openPopupFullImage, toggleLike))
 	})
 }
 

@@ -74,4 +74,25 @@ function patchUserData(nameInput, jobInput) {
 		})
 }
 
-export { promiseAll, patchUserData }
+function postNewCard(newCard) {
+	return fetch(`${config.baseUrl}/cards`, {
+		method: 'POST',
+		headers: config.headers,
+		body: JSON.stringify({
+			name: `${newCard.name}`,
+			link: `${newCard.link}`,
+		}),
+	})
+		.then(res => {
+			if (res.ok) {
+				return res.json()
+			}
+			return Promise.reject(`Ошибка: ${res.status}`)
+		})
+    
+		.catch(err => {
+			console.log(err)
+		})
+}
+
+export { promiseAll, patchUserData, postNewCard, getInitialCards }
