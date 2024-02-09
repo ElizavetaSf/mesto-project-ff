@@ -1,6 +1,7 @@
+
 import '../index.css'
 //import { initialCards } from './cards.js'
-import { addCard, deleteCard, toggleLike } from './card.js'
+import { createCard, toggleLike } from './card.js'
 import { openPopup, closePopup, closePopupOverlay } from './modal.js'
 import { enableValidation, clearValidation } from './validation.js'
 import {
@@ -8,6 +9,8 @@ import {
 	patchUserData,
 	postNewCard,
 	getInitialCards,
+	getUserData,
+	deleteCardApi,
 } from './api.js'
 
 const placeCards = document.querySelector('.places__list')
@@ -38,6 +41,11 @@ const validationSelectors = {
 	inputErrorClass: 'popup__input_type_error',
 	errorClass: 'popup__error_visible',
 }
+const deletePopup = document.querySelector('.popup_type_delete-card')
+const deletePopupButton = deletePopup.querySelector('.popup__button')
+let currentCardData
+let currentCard
+let userId 
 
 function addEditPopup() {
 	const editButton = document.querySelector('.profile__edit-button')
@@ -46,7 +54,7 @@ function addEditPopup() {
 		jobInput.value = profileDescription.textContent
 		clearValidation(formElementEdit, validationSelectors)
 		openPopup(editPopup)
-		})
+	})
 	formElementEdit.addEventListener('submit', handleFormElementEditSubmit)
 }
 
@@ -73,14 +81,11 @@ function handleFormElementAddSubmit(evt) {
 		name: `${placeNameInput.value}`,
 		link: `${linkInput.value}`,
 	}
-	postNewCard(newCard)
-	.then(
-		function(result) {
+	postNewCard(newCard).then(function (result) {
 		placeCards.prepend(
-			addCard(result, deleteCard, openPopupFullImage, toggleLike)
+			createCard(result, openDeletePopup, openPopupFullImage, toggleLike)
 		)
-		}
-	)
+	})
 	closePopup(newCardPopup)
 }
 
@@ -95,7 +100,9 @@ function handleFormElementEditSubmit(evt) {
 
 function displayCards(initialCards) {
 	initialCards.forEach(card => {
-		placeCards.append(addCard(card, deleteCard, openPopupFullImage, toggleLike))
+		placeCards.append(
+			createCard(card, openDeletePopup, openPopupFullImage, toggleLike)
+		)
 	})
 }
 
@@ -110,13 +117,30 @@ closeButtons.forEach(button => {
 	})
 })
 
+function openDeletePopup(card, cardData) {
+	currentCardData = cardData
+	currentCard = card
+	openPopup(deletePopup)
+}
+
+	deletePopupButton.addEventListener('click', () => {
+		deleteCard(currentCard, currentCardData)
+		closePopup(deletePopup)
+	})
+
+function deleteCard(currentCard, currentCardData) {
+	const currentCardId = currentCardData._id
+	deleteCardApi(currentCardId).then(function (result) {
+		currentCard.remove()
+	})
+}
+
 enableValidation(validationSelectors)
 
 addEditPopup()
 addNewCardPopup()
 
 promiseAll()
-	
 
 export {
 	placeCards,
@@ -126,4 +150,6 @@ export {
 	displayCards,
 	nameInput,
 	jobInput,
+	openDeletePopup,
+	userId,
 }

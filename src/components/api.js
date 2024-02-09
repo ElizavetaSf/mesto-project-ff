@@ -5,6 +5,7 @@ import {
 	displayCards,
 	nameInput,
 	jobInput,
+	userId,
 } from './index.js'
 
 const config = {
@@ -15,7 +16,8 @@ const config = {
 	},
 }
 
-const getUserData = fetch(`${config.baseUrl}/users/me`, {
+const getUserData = () => {
+  return fetch(`${config.baseUrl}/users/me`, {
 	headers: config.headers,
 })
 	.then(res => {
@@ -27,22 +29,25 @@ const getUserData = fetch(`${config.baseUrl}/users/me`, {
 	.catch(err => {
 		console.log(err)
 	})
+}
 
-const getInitialCards = fetch(`${config.baseUrl}/cards`, {
-	headers: config.headers,
-})
-	.then(res => {
-		if (res.ok) {
-			return res.json()
-		}
-		return Promise.reject(`Ошибка: ${res.status}`)
+const getInitialCards = () => {
+	return fetch(`${config.baseUrl}/cards`, {
+		headers: config.headers,
 	})
-	.catch(err => {
-		console.log(err)
-	})
+		.then(res => {
+			if (res.ok) {
+				return res.json()
+			}
+			return Promise.reject(`Ошибка: ${res.status}`)
+		})
+		.catch(err => {
+			console.log(err)
+		})
+}
 
 const promiseAll = () => {
-	Promise.all([getUserData, getInitialCards])
+	Promise.all([getUserData(), getInitialCards()])
 		.then(([resUserData, resInitialCards]) => {
 			profileName.textContent = resUserData.name
 			profileDescription.textContent = resUserData.about
@@ -95,4 +100,28 @@ function postNewCard(newCard) {
 		})
 }
 
-export { promiseAll, patchUserData, postNewCard, getInitialCards }
+function deleteCardApi(cardId) {
+	return fetch(`${config.baseUrl}/cards/${cardId}`, {
+		method: 'DELETE',
+		headers: config.headers,
+	})
+		.then(res => {
+			if (res.ok) {
+				return res.json()
+			}
+			return Promise.reject(`Ошибка: ${res.status}`)
+		})
+
+		.catch(err => {
+			console.log(err)
+		})
+}
+
+export {
+	promiseAll,
+	patchUserData,
+	postNewCard,
+	getInitialCards,
+	getUserData,
+	deleteCardApi,
+}
