@@ -1,19 +1,23 @@
 function enableValidation(validationSelectors) {
-  const formList = Array.from(
+	const formList = Array.from(
 		document.querySelectorAll(validationSelectors.formSelector)
 	)
-  formList.forEach(formElement => {
+	formList.forEach(formElement => {
 		setEventListeners(formElement, validationSelectors)
 	})
 }
 
 function setEventListeners(formElement, validationSelectors) {
-	const inputList = Array.from(formElement.querySelectorAll(validationSelectors.inputSelector))
-  const buttonElement = formElement.querySelector(validationSelectors.submitButtonSelector)
+	const inputList = Array.from(
+		formElement.querySelectorAll(validationSelectors.inputSelector)
+	)
+	const buttonElement = formElement.querySelector(
+		validationSelectors.submitButtonSelector
+	)
 	inputList.forEach(inputElement => {
 		inputElement.addEventListener('input', () => {
 			isValid(formElement, inputElement, validationSelectors)
-      toggleButtonState(inputList, buttonElement)
+			toggleButtonState(inputList, buttonElement)
 		})
 	})
 }
@@ -26,22 +30,27 @@ function isValid(formElement, inputElement, validationSelectors) {
 	}
 
 	if (!inputElement.validity.valid) {
-    showInputError(
+		showInputError(
 			formElement,
 			inputElement,
 			inputElement.validationMessage,
-      validationSelectors
+			validationSelectors
 		)
 	} else {
-    hideInputError(formElement, inputElement, validationSelectors)
+		hideInputError(formElement, inputElement, validationSelectors)
 	}
 }
 
-function showInputError(formElement, inputElement, errorMessage, validationSelectors) {
+function showInputError(
+	formElement,
+	inputElement,
+	errorMessage,
+	validationSelectors
+) {
 	const formError = formElement.querySelector(`.${inputElement.id}-error`)
-  inputElement.classList.add(validationSelectors.inputErrorClass)
-  formError.classList.add(validationSelectors.errorClass)
-  formError.textContent = errorMessage
+	inputElement.classList.add(validationSelectors.inputErrorClass)
+	formError.classList.add(validationSelectors.errorClass)
+	formError.textContent = errorMessage
 }
 
 function hideInputError(formElement, inputElement, validationSelectors) {
@@ -51,32 +60,34 @@ function hideInputError(formElement, inputElement, validationSelectors) {
 }
 
 function hasInvalidInput(inputList) {
-  return inputList.some((inputElement) => {
-    return !inputElement.validity.valid
-  })
+	return inputList.some(inputElement => {
+		return !inputElement.validity.valid
+	})
 }
 
 function toggleButtonState(inputList, buttonElement) {
 	if (hasInvalidInput(inputList)) {
-    buttonElement.disabled = true
+		buttonElement.disabled = true
 	} else {
-    buttonElement.disabled = false
-  }
+		buttonElement.disabled = false
+	}
 }
 
 function clearValidation(formElement, validationSelectors) {
-  const FormErrorList = Array.from(formElement.querySelectorAll('.popup__error'))
-  const inputList = Array.from(
+	const FormErrorList = Array.from(
+		formElement.querySelectorAll('.popup__error')
+	)
+	const inputList = Array.from(
 		formElement.querySelectorAll(validationSelectors.inputSelector)
 	)
-  const submitButtonAddCard = formElement.querySelector('.popup__button')
-  FormErrorList.forEach(formErrorElement => {
+	const submitButtonAddCard = formElement.querySelector('.popup__button')
+	FormErrorList.forEach(formErrorElement => {
 		formErrorElement.classList.remove(validationSelectors.errorClass)
 	})
-  inputList.forEach(inputElement => {
+	inputList.forEach(inputElement => {
 		inputElement.classList.remove(validationSelectors.inputErrorClass)
 	})
-  toggleButtonState(inputList, submitButtonAddCard)
+	toggleButtonState(inputList, submitButtonAddCard)
 }
 
 export { enableValidation, clearValidation }

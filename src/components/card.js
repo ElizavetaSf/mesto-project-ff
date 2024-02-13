@@ -1,6 +1,4 @@
-import { openPopup, closePopup } from './modal.js'
-import { deleteCardApi, } from './api.js'
-import { openDeletePopup, userId } from './index.js'
+import { userId } from './index.js'
 
 function createCard(cardData, openDeletePopup, showPopup, like) {
 	const cardTemplate = document.querySelector('#card-template').content
@@ -15,7 +13,22 @@ function createCard(cardData, openDeletePopup, showPopup, like) {
 	cardImage.addEventListener('click', () =>
 		showPopup(cardImage.src, cardName.textContent)
 	)
-	card.querySelector('.card__like-button').addEventListener('click', like)
+	const cardLikeButton = card.querySelector('.card__like-button')
+
+	cardLikeButton.addEventListener('click', () => {
+		like(cardData, cardLikeAmount, cardLikeButton)
+	})
+
+	if (cardData.likes.some(currentUser => currentUser._id === userId)) {
+		cardLikeButton.classList.add('card__like-button_is-active')
+	} else {
+		cardLikeButton.classList.remove('card__like-button_is-active')
+	}
+	if (cardData.likes.length) {
+		cardLikeAmount.textContent = cardData.likes.length
+	} else {
+		cardLikeAmount.textContent = ''
+	}
 
 	if (!(cardData.owner._id === userId)) {
 		cardDeleteButton.classList.add('card__delete-button-hidden')
@@ -25,6 +38,7 @@ function createCard(cardData, openDeletePopup, showPopup, like) {
 			openDeletePopup(card, cardData)
 		})
 	}
+
 	if (cardData.likes.length) {
 		cardLikeAmount.textContent = cardData.likes.length
 	} else {
@@ -34,8 +48,4 @@ function createCard(cardData, openDeletePopup, showPopup, like) {
 	return card
 }
 
-function toggleLike(evt) {
-	evt.target.classList.toggle('card__like-button_is-active')
-}
-
-export { createCard, toggleLike }
+export { createCard }

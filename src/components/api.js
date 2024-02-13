@@ -1,13 +1,3 @@
-import {
-	profileName,
-	profileDescription,
-	profileImage,
-	displayCards,
-	nameInput,
-	jobInput,
-	userId,
-} from './index.js'
-
 const config = {
 	baseUrl: 'https://nomoreparties.co/v1/wff-cohort-6',
 	headers: {
@@ -17,18 +7,18 @@ const config = {
 }
 
 const getUserData = () => {
-  return fetch(`${config.baseUrl}/users/me`, {
-	headers: config.headers,
-})
-	.then(res => {
-		if (res.ok) {
-			return res.json()
-		}
-		return Promise.reject(`Ошибка: ${res.status}`)
+	return fetch(`${config.baseUrl}/users/me`, {
+		headers: config.headers,
 	})
-	.catch(err => {
-		console.log(err)
-	})
+		.then(res => {
+			if (res.ok) {
+				return res.json()
+			}
+			return Promise.reject(`Ошибка: ${res.status}`)
+		})
+		.catch(err => {
+			console.log(err)
+		})
 }
 
 const getInitialCards = () => {
@@ -47,16 +37,7 @@ const getInitialCards = () => {
 }
 
 const promiseAll = () => {
-	Promise.all([getUserData(), getInitialCards()])
-		.then(([resUserData, resInitialCards]) => {
-			profileName.textContent = resUserData.name
-			profileDescription.textContent = resUserData.about
-			profileImage.style = `background-image: url('${resUserData.avatar}')`
-			displayCards(resInitialCards)
-		})
-		.catch(err => {
-			console.log(err)
-		})
+	return Promise.all([getUserData(), getInitialCards()])
 }
 
 function patchUserData(nameInput, jobInput) {
@@ -67,16 +48,12 @@ function patchUserData(nameInput, jobInput) {
 			name: `${nameInput.value}`,
 			about: `${jobInput.value}`,
 		}),
+	}).then(res => {
+		if (res.ok) {
+			return res.json()
+		}
+		return Promise.reject(`Ошибка: ${res.status}`)
 	})
-		.then(res => {
-			if (res.ok) {
-				return res.json()
-			}
-			return Promise.reject(`Ошибка: ${res.status}`)
-		})
-		.catch(err => {
-			console.log(err)
-		})
 }
 
 function postNewCard(newCard) {
@@ -87,34 +64,63 @@ function postNewCard(newCard) {
 			name: `${newCard.name}`,
 			link: `${newCard.link}`,
 		}),
+	}).then(res => {
+		if (res.ok) {
+			return res.json()
+		}
+		return Promise.reject(`Ошибка: ${res.status}`)
 	})
-		.then(res => {
-			if (res.ok) {
-				return res.json()
-			}
-			return Promise.reject(`Ошибка: ${res.status}`)
-		})
-    
-		.catch(err => {
-			console.log(err)
-		})
 }
 
 function deleteCardApi(cardId) {
 	return fetch(`${config.baseUrl}/cards/${cardId}`, {
 		method: 'DELETE',
 		headers: config.headers,
+	}).then(res => {
+		if (res.ok) {
+			return res.json()
+		}
+		return Promise.reject(`Ошибка: ${res.status}`)
 	})
-		.then(res => {
-			if (res.ok) {
-				return res.json()
-			}
-			return Promise.reject(`Ошибка: ${res.status}`)
-		})
+}
 
-		.catch(err => {
-			console.log(err)
-		})
+function addLike(cardId) {
+	return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
+		method: 'PUT',
+		headers: config.headers,
+	}).then(res => {
+		if (res.ok) {
+			return res.json()
+		}
+		return Promise.reject(`Ошибка: ${res.status}`)
+	})
+}
+
+function removeLike(cardId) {
+	return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
+		method: 'DELETE',
+		headers: config.headers,
+	}).then(res => {
+		if (res.ok) {
+			return res.json()
+		}
+		return Promise.reject(`Ошибка: ${res.status}`)
+	})
+}
+
+function patchUserAvatar(avatarInput) {
+	return fetch(`${config.baseUrl}/users/me/avatar`, {
+		method: 'PATCH',
+		headers: config.headers,
+		body: JSON.stringify({
+			avatar: `${avatarInput.value}`,
+		}),
+	}).then(res => {
+		if (res.ok) {
+			return res.json()
+		}
+		return Promise.reject(`Ошибка: ${res.status}`)
+	})
 }
 
 export {
@@ -124,4 +130,7 @@ export {
 	getInitialCards,
 	getUserData,
 	deleteCardApi,
+	removeLike,
+	addLike,
+	patchUserAvatar,
 }

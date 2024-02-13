@@ -1,16 +1,16 @@
-
 import '../index.css'
 //import { initialCards } from './cards.js'
-import { createCard, toggleLike } from './card.js'
+import { createCard } from './card.js'
 import { openPopup, closePopup, closePopupOverlay } from './modal.js'
 import { enableValidation, clearValidation } from './validation.js'
 import {
 	promiseAll,
 	patchUserData,
 	postNewCard,
-	getInitialCards,
-	getUserData,
 	deleteCardApi,
+	removeLike,
+	addLike,
+	patchUserAvatar,
 } from './api.js'
 
 const placeCards = document.querySelector('.places__list')
@@ -23,7 +23,16 @@ const formElementEdit = document.querySelector(
 )
 const nameInput = formElementEdit.querySelector('.popup__input_type_name')
 const jobInput = formElementEdit.querySelector('.popup__input_type_description')
+const editSubmitButton = formElementEdit.querySelector('.popup__button')
 const formElementAdd = document.querySelector('.popup__form[name=new-place]')
+const formElementEditAvatar = document.querySelector(
+	'.popup__form[name=edit-avatar]'
+)
+const avatarInput = formElementEditAvatar.querySelector(
+	'.popup__input_type_url'
+)
+const editAvatarSubmitButton =
+	formElementEditAvatar.querySelector('.popup__button')
 const newCardPopup = document.querySelector('.popup_type_new-card')
 const imagePopup = document.querySelector('.popup_type_image')
 const imageContent = imagePopup.querySelector('.popup__image')
@@ -32,6 +41,7 @@ const placeNameInput = formElementAdd.querySelector(
 	'.popup__input_type_card-name'
 )
 const linkInput = formElementAdd.querySelector('.popup__input_type_url')
+const addCardSubmitButton = formElementAdd.querySelector('.popup__button')
 const closeButtons = document.querySelectorAll('.popup__close')
 const validationSelectors = {
 	formSelector: '.popup__form',
@@ -43,9 +53,10 @@ const validationSelectors = {
 }
 const deletePopup = document.querySelector('.popup_type_delete-card')
 const deletePopupButton = deletePopup.querySelector('.popup__button')
+const editAvatarPopup = document.querySelector('.popup_type_edit-avatar')
 let currentCardData
 let currentCard
-let userId 
+let userId
 
 function addEditPopup() {
 	const editButton = document.querySelector('.profile__edit-button')
@@ -56,6 +67,18 @@ function addEditPopup() {
 		openPopup(editPopup)
 	})
 	formElementEdit.addEventListener('submit', handleFormElementEditSubmit)
+}
+
+function addEditAvatarPopup() {
+	profileImage.addEventListener('click', () => {
+		formElementEditAvatar.reset()
+		clearValidation(formElementEditAvatar, validationSelectors)
+		openPopup(editAvatarPopup)
+	})
+	formElementEditAvatar.addEventListener(
+		'submit',
+		handleFormElementEditAvatarSubmit
+	)
 }
 
 function addNewCardPopup() {
@@ -81,21 +104,53 @@ function handleFormElementAddSubmit(evt) {
 		name: `${placeNameInput.value}`,
 		link: `${linkInput.value}`,
 	}
-	postNewCard(newCard).then(function (result) {
-		placeCards.prepend(
-			createCard(result, openDeletePopup, openPopupFullImage, toggleLike)
-		)
-	})
+	renderLoading(true, addCardSubmitButton)
+	postNewCard(newCard)
+		.then(function (result) {
+			placeCards.prepend(
+				createCard(result, openDeletePopup, openPopupFullImage, toggleLike)
+			)
+		})
+		.catch(err => {
+			console.log(err)
+		})
+		.finally(() => {
+			renderLoading(false, addCardSubmitButton)
+		})
 	closePopup(newCardPopup)
 }
 
 function handleFormElementEditSubmit(evt) {
 	evt.preventDefault()
+	renderLoading(true, editSubmitButton)
 	patchUserData(nameInput, jobInput)
-	profileName.textContent = nameInput.value
-	profileDescription.textContent = jobInput.value
+		.then(result => {
+			profileName.textContent = result.name
+			profileDescription.textContent = result.about
+		})
+		.catch(err => {
+			console.log(err)
+		})
+		.finally(() => {
+			renderLoading(false, editSubmitButton)
+		})
 	closePopup(editPopup)
-	closePopup(newCardPopup)
+}
+
+function handleFormElementEditAvatarSubmit(evt) {
+	evt.preventDefault()
+	renderLoading(true, editAvatarSubmitButton)
+	patchUserAvatar(avatarInput)
+		.then(result => {
+			profileImage.style = `background-image: url('${result.avatar}')`
+		})
+		.catch(err => {
+			console.log(err)
+		})
+		.finally(() => {
+			renderLoading(false, editAvatarSubmitButton)
+		})
+	closePopup(editAvatarPopup)
 }
 
 function displayCards(initialCards) {
@@ -104,6 +159,13 @@ function displayCards(initialCards) {
 			createCard(card, openDeletePopup, openPopupFullImage, toggleLike)
 		)
 	})
+}
+
+function setUserData(userData) {
+	profileName.textContent = userData.name
+	profileDescription.textContent = userData.about
+	profileImage.style = `background-image: url('${userData.avatar}')`
+	userId = userData._id
 }
 
 editPopup.addEventListener('click', closePopupOverlay)
@@ -123,33 +185,80 @@ function openDeletePopup(card, cardData) {
 	openPopup(deletePopup)
 }
 
-	deletePopupButton.addEventListener('click', () => {
-		deleteCard(currentCard, currentCardData)
-		closePopup(deletePopup)
-	})
+deletePopupButton.addEventListener('click', () => {
+	deleteCard(currentCard, currentCardData)
+	closePopup(deletePopup)
+})
 
 function deleteCard(currentCard, currentCardData) {
 	const currentCardId = currentCardData._id
-	deleteCardApi(currentCardId).then(function (result) {
-		currentCard.remove()
-	})
+	deleteCardApi(currentCardId)
+		.then(() => {
+			currentCard.remove()
+		})
+		.catch(err => {
+			console.log(err)
+		})
+}
+
+function toggleLike(cardData, cardLikeAmount, likeButton) {
+	if (likeButton.classList.contains('card__like-button_is-active')) {
+		removeLike(cardData._id)
+			.then(updatedCardData => {
+				updateLikes(updatedCardData, cardLikeAmount, likeButton)
+			})
+			.catch(err => {
+				console.log(err)
+			})
+	} else {
+		addLike(cardData._id)
+			.then(updatedCardData => {
+				updateLikes(updatedCardData, cardLikeAmount, likeButton)
+			})
+			.catch(err => {
+				console.log(err)
+			})
+	}
+}
+
+function updateLikes(updatedCardData, cardLikeAmount, likeButton) {
+	if (updatedCardData.likes.length) {
+		cardLikeAmount.textContent = updatedCardData.likes.length
+	} else {
+		cardLikeAmount.textContent = ''
+	}
+	likeButton.classList.toggle('card__like-button_is-active')
+}
+
+function renderLoading(isLoading, button) {
+	if (isLoading) {
+		button.textContent = 'Сохранение...'
+	} else {
+		button.textContent = 'Сохранить'
+	}
 }
 
 enableValidation(validationSelectors)
 
 addEditPopup()
 addNewCardPopup()
+addEditAvatarPopup()
 
 promiseAll()
+	.then(([resUserData, resInitialCards]) => {
+		setUserData(resUserData)
+		displayCards(resInitialCards)
+	})
+	.catch(err => {
+		console.log(err)
+	})
 
 export {
 	placeCards,
 	profileName,
 	profileDescription,
 	profileImage,
-	displayCards,
 	nameInput,
 	jobInput,
-	openDeletePopup,
 	userId,
 }
