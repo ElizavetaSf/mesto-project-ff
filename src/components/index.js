@@ -108,6 +108,7 @@ function handleFormElementAddSubmit(evt) {
 	renderLoading(true, buttonSubmitNewCard)
 	postNewCard(newCard)
 		.then(function (result) {
+			closePopup(newCardPopup)
 			placeCards.prepend(
 				createCard(
 					result,
@@ -124,7 +125,6 @@ function handleFormElementAddSubmit(evt) {
 		.finally(() => {
 			renderLoading(false, buttonSubmitNewCard)
 		})
-	closePopup(newCardPopup)
 }
 
 function handleFormElementEditSubmit(evt) {
@@ -132,6 +132,7 @@ function handleFormElementEditSubmit(evt) {
 	renderLoading(true, buttonSubmitProfileForm)
 	patchUserData(nameInput, jobInput)
 		.then(result => {
+			closePopup(editPopup)
 			profileName.textContent = result.name
 			profileDescription.textContent = result.about
 		})
@@ -141,7 +142,6 @@ function handleFormElementEditSubmit(evt) {
 		.finally(() => {
 			renderLoading(false, buttonSubmitProfileForm)
 		})
-	closePopup(editPopup)
 }
 
 function handleFormElementEditAvatarSubmit(evt) {
@@ -149,6 +149,7 @@ function handleFormElementEditAvatarSubmit(evt) {
 	renderLoading(true, buttonSubmitAvatar)
 	patchUserAvatar(avatarInput)
 		.then(result => {
+			closePopup(editAvatarPopup)
 			profileImage.style = `background-image: url('${result.avatar}')`
 		})
 		.catch(err => {
@@ -157,7 +158,6 @@ function handleFormElementEditAvatarSubmit(evt) {
 		.finally(() => {
 			renderLoading(false, buttonSubmitAvatar)
 		})
-	closePopup(editAvatarPopup)
 }
 
 function displayCards(initialCards) {
@@ -178,6 +178,8 @@ function setUserData(userData) {
 editPopup.addEventListener('click', closePopupOverlay)
 newCardPopup.addEventListener('click', closePopupOverlay)
 imagePopup.addEventListener('click', closePopupOverlay)
+popupDeleteCard.addEventListener('click', closePopupOverlay)
+editAvatarPopup.addEventListener('click', closePopupOverlay)
 
 closeButtons.forEach(button => {
 	button.addEventListener('click', () => {
@@ -194,13 +196,13 @@ function openDeletePopup(card, cardData) {
 
 buttonPopupDeleteCard.addEventListener('click', () => {
 	deleteCard(currentCard, currentCardData)
-	closePopup(popupDeleteCard)
 })
 
 function deleteCard(currentCard, currentCardData) {
 	const currentCardId = currentCardData._id
 	deleteCardApi(currentCardId)
 		.then(() => {
+			closePopup(popupDeleteCard)
 			deleteCardElement(currentCard)
 		})
 		.catch(err => {
