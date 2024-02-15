@@ -1,6 +1,4 @@
-import { userId } from './index.js'
-
-function createCard(cardData, openDeletePopup, showPopup, like) {
+function createCard(cardData, openDeletePopup, showPopup, like, userId) {
 	const cardTemplate = document.querySelector('#card-template').content
 	const card = cardTemplate.querySelector('.card').cloneNode(true)
 	const cardImage = card.querySelector('.card__image')
@@ -48,4 +46,17 @@ function createCard(cardData, openDeletePopup, showPopup, like) {
 	return card
 }
 
-export { createCard }
+function deleteCardElement(card) {
+	card.remove()
+}
+
+function updateLikes(updatedCardData, cardLikeAmount, likeButton) {
+	if (updatedCardData.likes.length) {
+		cardLikeAmount.textContent = updatedCardData.likes.length
+	} else {
+		cardLikeAmount.textContent = ''
+	}
+	likeButton.classList.toggle('card__like-button_is-active')
+}
+
+export { createCard, deleteCardElement, updateLikes }
